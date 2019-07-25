@@ -1,5 +1,5 @@
 ---
-title: "DRC - Analysis 2"
+title: "DRC - Analysis"
 author: "Thomas Lassourd"
 date: 'Date created: `r Sys.Date()`'
 output:
@@ -7,7 +7,9 @@ output:
     df_print: paged
     highlight: haddock
     smart: yes
+    theme: readable
   html_document:
+    code_folding: hide
     df_print: paged
   pdf_document: default
 ---
@@ -17,7 +19,7 @@ output:
 Cleaning and analyzing EITI data for the Democratic Republic of Congo
 
 ```{r message=FALSE}
-pacman::p_load(tidyverse, ggthemes, nrgiR)
+pacman::p_load(tidyverse, ggthemes, nrgiR , scales)
 
 ## get the EITI data from resource data (only downloads once a session)
 if (!exists("eiti_company")) {
@@ -75,24 +77,6 @@ get_plot_data <- function(df, g_var, threshold) {
 }
 ```
 
-#### Applying the function
-Need to fix this. 
-
-````{r, fig.width=12}
-get_plot_data( drc_eiti, company_name , threshold = 18e7) %>% 
-  ggplot(data = ., mapping = aes(x = fct_reorder(x_var, -total_pay), y = total_pay)) +
-  geom_col() +
-  coord_flip() +
-  theme_economist() +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
-  labs(title = "Top mining taxpayers's total contributions according to EITI reports", 
-       y = "Cumulative payments") +
-  theme(
-    axis.title.y = element_blank()
-  ) 
-
-```
-
 #### Customized pie chart
 Create a blank theme :
 
@@ -113,6 +97,8 @@ The data is ready for some simple descriptive analysis.
 
 The first chart shows us the total amount of payment by year. 
 
+Comment: large drop in mining revenue in 2016
+
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -122,36 +108,32 @@ drc_eiti %>%
     ggplot(aes(x = year, y = total_pay)) +
     geom_col() +
     theme_fivethirtyeight() +
-    labs(title ="Total annual contributions according to EITI summary data", x = "year", y = "Cumulative payments - USD")
+    scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+    labs(title ="Total annual contributions according to EITI summary data", x = "year", y = "Cumulative payments")
 ```
 
-
 The second chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
+
 Comment: the majority of payments made during that period comes from 12 companies
 
-```{r, fig.width=12}
-drc_eiti %>% 
-  filter(sector == "Mining") %>% 
-  group_by(company_name) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(company_name = if_else(total_pay > 18e7, company_name, "Other")) %>% 
-  group_by(company_name) %>% 
-  summarise(total_pay = sum(total_pay, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(data = ., mapping = aes(x = fct_reorder(company_name, -total_pay), y = total_pay)) +
+````{r, fig.width=12}
+get_plot_data( drc_eiti, company_name , threshold = 18e7) %>% 
+  ggplot(data = ., mapping = aes(x = fct_reorder(x_var, -total_pay), y = total_pay)) +
   geom_col() +
   coord_flip() +
   theme_economist() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
   labs(title = "Top mining taxpayers's total contributions according to EITI reports", 
        y = "Cumulative payments") +
   theme(
     axis.title.y = element_blank()
-  )
+  ) 
+
 ```
 
 The third chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
+
 Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years.
 
 ```{r, fig.width=12}
@@ -168,44 +150,32 @@ drc_eiti %>%
   geom_bar(stat = "identity" , colour="black") +
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Cumulative payments - USD") +
+  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Total annual payments") +
   theme(
   )
 ```
 
 The fourth chart shows us the major payment types, by gfs description, that contributed more than 120 million USD over the entire period covered by the database.
-Comments: 
-1/ Surprisingly custom payments come out first, while one would expect it to be lower, based on cash flow models.
-2/ Payments to SOEs is the third largest payment. 
 
+Comments: 
+
+1. Surprisingly custom payments come out first, while one would expect it to be lower, based on cash flow models.
+2. Payments to SOEs is the third largest payment. 
+    
 ```{r, fig.width=12}
-drc_eiti %>% 
-  filter(sector == "Mining") %>% 
-  group_by(gfs_description) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(gfs_description = if_else(total_pay > 12e7, gfs_description, "Other")) %>% 
-  group_by(gfs_description) %>% 
-  summarise(total_pay = sum(total_pay, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = fct_reorder(gfs_description, -total_pay), y = total_pay)) +
+get_plot_data( drc_eiti, gfs_description , threshold = 12e7) %>% 
+  ggplot(aes(x = fct_reorder(x_var, -total_pay), y = total_pay)) +
   geom_col() +
   coord_flip() +
   theme_economist() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
   labs(title ="Main revenue streams according to EITI summary data", x = "year", y = "Cumulative payments - USD")
 ```
 ```{r, fig.width=12}
-drc_eiti %>% 
-  filter(sector == "Mining") %>% 
-  group_by(gfs_description) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(gfs_description = if_else(total_pay > 12e7, gfs_description, "Other")) %>% 
-  group_by(gfs_description) %>% 
-  summarise(total_pay = sum(total_pay, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = " ", y = total_pay, fill = fct_reorder(gfs_description, -total_pay))) +
+get_plot_data( drc_eiti, gfs_description , threshold = 12e7) %>% 
+  ggplot(aes(x = " ", y = total_pay, fill = fct_reorder(x_var, -total_pay))) +
   geom_bar(width = 1, stat = "identity") +
   coord_polar("y", start=0) +
   scale_fill_grey() +  
@@ -216,10 +186,12 @@ drc_eiti %>%
 
 
 The fifth chart shows us the major payment types, by gfs description, that contributed more than 120 million USD over the entire period covered by the database, on an annual basis.
+
 Comments:
-1/ Custom duties are really high from 2013 to 2015.
-2/ Large bonus payment in 2012 (Sicomines?)
-3/ No taxes on payroll in 2016 - check the data
+
+1. Custom duties are really high from 2013 to 2015.
+2. Large bonus payment in 2012 (Sicomines?)
+3. No taxes on payroll in 2016 - check the data
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -236,17 +208,20 @@ drc_eiti %>%
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() +
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(title = str_wrap("Top mining taxpayers's annual contributions according to EITI summary data"), x = "year", y = str_wrap("Cumulative payments - USD"))
+  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title = str_wrap("Top mining taxpayers's annual contributions according to EITI summary data"), x = "year", y = str_wrap("Total annual payments"))
 ```
 
 
 
 The sixth chart shows us the major gfs description of the payments of the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
+
 Comments:
-1/ MUMI, KCC, TFM and Kibali pay a lot of custom duties: investigate
-2/ KCC, Metalkol, TFM, Ruahsi, Boss, and MUMI pay significant amount to SOEs.
-3/ Very large bonus payments from Sicomines and Frontier.
-4/ Very little royalties paid by Metalkol and Sicomines. 
+
+1. MUMI, KCC, TFM and Kibali pay a lot of custom duties: investigate
+2. KCC, Metalkol, TFM, Ruahsi, Boss, and MUMI pay significant amount to SOEs.
+3. Very large bonus payments from Sicomines and Frontier.
+4. Very little royalties paid by Metalkol and Sicomines. 
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -269,17 +244,20 @@ drc_eiti %>%
   theme(axis.text.x = element_text(angle = 90)) +
   coord_flip() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
-  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Cumulative payments - USD")
+  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Cumulative payments")
 ```
 
 The seventh chart in facet wrap shows us the major gfs description of the payments of the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
+
 Comments:
-1/ KCC's payments almost stop in 2016
-2/ Comapnies that have a "normal" payment profile over time: Boss, MMG, Ruashi, Kibali, Frontier.
-3/ TFM: exceptionnally large income tax payment in 2015
-4/ Kipoi: exceptionnally large income tax payment in 2014
-5/ MUMI: exceptionnally large income tax payment in 2011 and 2015
-6/ Meltalko: exceptionnally large income tax payment in 2016
+
+1. KCC's payments almost stop in 2016
+2. Comapnies that have a "normal" payment profile over time: Boss, MMG, Ruashi, Kibali, Frontier.
+3. TFM: exceptionnally large income tax payment in 2015
+4. Kipoi: exceptionnally large income tax payment in 2014
+5. MUMI: exceptionnally large income tax payment in 2011 and 2015
+6. Meltalkol: exceptionnally large income tax payment in 2016
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -301,6 +279,7 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-9, sep = " ")) +
   facet_wrap(~company_name)
-  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Cumulative payments - USD")
+  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Total annual payments")
 ```
