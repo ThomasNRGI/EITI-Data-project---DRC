@@ -1,0 +1,438 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={DRC - Analysis},
+            pdfauthor={Thomas Lassourd},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{DRC - Analysis}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Thomas Lassourd}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{Date created: 2019-07-19}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{section}{%
+\subsection{}\label{section}}
+
+\hypertarget{purpose}{%
+\subsubsection{Purpose}\label{purpose}}
+
+Cleaning and analyzing EITI data for the Democratic Republic of Congo
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pacman}\OperatorTok{::}\KeywordTok{p_load}\NormalTok{(tidyverse, ggthemes, nrgiR)}
+
+\CommentTok{## get the EITI data from resource data (only downloads once a session)}
+\ControlFlowTok{if}\NormalTok{ (}\OperatorTok{!}\KeywordTok{exists}\NormalTok{(}\StringTok{"eiti_company"}\NormalTok{)) \{}
+\NormalTok{  eiti_company <-}\StringTok{ }\KeywordTok{read_csv}\NormalTok{(}\StringTok{"https://www.resourcedata.org/dataset/7dd3c8b6-9256-4e34-9360-1519efd87407/resource/bba3b646-131b-47c5-9f4c-37019f896575/download/company-payments.csv"}\NormalTok{)}
+  
+\NormalTok{\}}
+
+\CommentTok{## reconciliation files (made from initially extracting all unique occurences of company names and names of revenue streams, matching them to clean names and adding a sector variable (mining vs oil))}
+\NormalTok{company_reconcile <-}\StringTok{ }\NormalTok{readxl}\OperatorTok{::}\KeywordTok{read_excel}\NormalTok{(}\StringTok{"reconcile.xlsx"}\NormalTok{, }\DataTypeTok{sheet =} \StringTok{"company_names"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name_clean =} \KeywordTok{str_squish}\NormalTok{(company_name_clean)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{distinct}\NormalTok{()}
+
+\NormalTok{rev_code_reconcile <-}\StringTok{ }\NormalTok{readxl}\OperatorTok{::}\KeywordTok{read_excel}\NormalTok{(}\StringTok{"reconcile.xlsx"}\NormalTok{, }\DataTypeTok{sheet =} \StringTok{"rev_codes"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{gfs_code_clean =} \KeywordTok{str_squish}\NormalTok{(gfs_code_clean) , }
+         \DataTypeTok{gfs_description_clean =} \KeywordTok{str_squish}\NormalTok{(gfs_description_clean) ,}
+         \DataTypeTok{name_of_revenue_stream_clean =} \KeywordTok{str_squish}\NormalTok{(name_of_revenue_stream_clean) ) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{distinct}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+Now that we have the data ready let's do some clean up.
+
+\hypertarget{cleaning}{%
+\subsubsection{Cleaning}\label{cleaning}}
+
+We are only interested in data from DRC. Let's clean the company names,
+the gfs codes, the gfs descriptions and the name of the revenue streams,
+using our previous files. Below we add the clean columns and then delete
+the original variables.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti <-}\StringTok{ }\NormalTok{eiti_company }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(country }\OperatorTok{==}\StringTok{ "Democratic Republic of Congo"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(., rev_code_reconcile, }\DataTypeTok{by =} \StringTok{"name_of_revenue_stream"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(., company_reconcile, }\DataTypeTok{by =} \StringTok{"company_name"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{     }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name =}\NormalTok{ company_name_clean, }
+            \DataTypeTok{gfs_code =}\NormalTok{ gfs_code_clean, }
+            \DataTypeTok{gfs_description =}\NormalTok{ gfs_description_clean,}
+            \DataTypeTok{name_of_revenue_stream =}\NormalTok{ name_of_revenue_stream_clean) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{ ( }\OperatorTok{-}\KeywordTok{c}\NormalTok{( company_name_clean , gfs_code_clean, gfs_description_clean ,  name_of_revenue_stream_clean)) }
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{create-a-function-for-sorting-observations}{%
+\subsubsection{Create a function for sorting
+observations}\label{create-a-function-for-sorting-observations}}
+
+\hypertarget{designing-the-function}{%
+\paragraph{Designing the function}\label{designing-the-function}}
+
+In the code below we create a function that takes the tibble, the
+grouping variable and a threshold as its arguments. This automates the
+same logic that we will be repeating across different charts.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{get_plot_data <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(df, g_var, threshold) \{}
+\NormalTok{  df }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(\{\{g_var\}\}) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{x_var =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\NormalTok{threshold, \{\{g_var\}\}, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{group_by}\NormalTok{(x_var) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(total_pay, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{applying-the-function}{%
+\paragraph{Applying the function}\label{applying-the-function}}
+
+Need to fix this.
+
+\{r, fig.width=12\} get\_plot\_data( drc\_eiti, company\_name, threshold
+= 18e7) \%\textgreater{}\% ggplot(data = ., mapping = aes(x =
+fct\_reorder(x\_var, -total\_pay), y = total\_pay)) + geom\_col() +
+coord\_flip() + theme\_economist() + scale\_x\_discrete(labels =
+function(x) str\_wrap(x, width = 30)) + labs(title = ``Top mining
+taxpayers's total contributions according to EITI reports'', y =
+``Cumulative payments'') + theme( axis.title.y = element\_blank() ) ``
+
+\hypertarget{analysis}{%
+\subsubsection{Analysis}\label{analysis}}
+
+The data is ready for some simple descriptive analysis.
+
+The first chart shows us the mining companies that pay more than a
+threshold of 180 million USD over the entire period covered by the
+database.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{18e7}\NormalTok{, company_name, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(total_pay, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ ., }\DataTypeTok{mapping =} \KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{fct_reorder}\NormalTok{(company_name, }\OperatorTok{-}\NormalTok{total_pay), }\DataTypeTok{y =}\NormalTok{ total_pay)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_col}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_economist}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_discrete}\NormalTok{(}\DataTypeTok{labels =} \ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{str_wrap}\NormalTok{(x, }\DataTypeTok{width =} \DecValTok{30}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Top mining taxpayers's total contributions according to EITI reports"}\NormalTok{, }
+       \DataTypeTok{y =} \StringTok{"Cumulative payments"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}
+    \DataTypeTok{axis.title.y =} \KeywordTok{element_blank}\NormalTok{()}
+\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+The second chart shows us the mining companies that pay more than a
+threshold of 180 million USD over the entire period covered by the
+database.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{18e7}\NormalTok{, company_name, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name, year) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ year, }\DataTypeTok{y =}\NormalTok{ total_pay, }\DataTypeTok{fill =} \KeywordTok{fct_reorder}\NormalTok{(company_name, total_pay))) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{ , }\DataTypeTok{colour=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\KeywordTok{nrgi_colors}\NormalTok{(),}\StringTok{"black"}\NormalTok{, }\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"purple"}\NormalTok{ , }\StringTok{"navy"}\NormalTok{ , }\StringTok{"orange"}\NormalTok{), }\DataTypeTok{na.value =} \KeywordTok{nrgi_colors}\NormalTok{()[}\DecValTok{5}\NormalTok{]) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle =} \DecValTok{90}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Top mining taxpayers's annual contributions according to EITI summary data"}\NormalTok{, }\DataTypeTok{x =} \StringTok{"year"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}
+\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+The third chart shows us the major payment types, by gfs description,
+that contributed more than 120 million USD over the entire period
+covered by the database.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{gfs_description =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{12e7}\NormalTok{, gfs_description, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(total_pay, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{fct_reorder}\NormalTok{(gfs_description, }\OperatorTok{-}\NormalTok{total_pay), }\DataTypeTok{y =}\NormalTok{ total_pay)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_col}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_economist}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_discrete}\NormalTok{(}\DataTypeTok{labels =} \ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{str_wrap}\NormalTok{(x, }\DataTypeTok{width =} \DecValTok{30}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Main revenue streams according to EITI summary data"}\NormalTok{, }\DataTypeTok{x =} \StringTok{"year"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+The fourth chart shows us the major payment types, by gfs description,
+that contributed more than 120 million USD over the entire period
+covered by the database, on an annual basis.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{gfs_description =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{12e7}\NormalTok{, gfs_description, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description, year) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ year, }\DataTypeTok{y =}\NormalTok{ total_pay, }\DataTypeTok{fill =} \KeywordTok{fct_reorder}\NormalTok{(gfs_description, total_pay))) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{ , }\DataTypeTok{colour=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\KeywordTok{nrgi_colors}\NormalTok{(),}\StringTok{"black"}\NormalTok{, }\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"purple"}\NormalTok{ , }\StringTok{"navy"}\NormalTok{ , }\StringTok{"orange"}\NormalTok{), }\DataTypeTok{na.value =} \KeywordTok{nrgi_colors}\NormalTok{()[}\DecValTok{5}\NormalTok{]) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{nrgi_theme}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle =} \DecValTok{90}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Top mining taxpayers's annual contributions according to EITI summary data"}\NormalTok{, }\DataTypeTok{x =} \StringTok{"year"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+The fifth chart shows us the total amount of payment by year.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(year) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ year, }\DataTypeTok{y =}\NormalTok{ total_pay)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_col}\NormalTok{() }\OperatorTok{+}
+\StringTok{   }\KeywordTok{theme_fivethirtyeight}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Total annual contributions according to EITI summary data"}\NormalTok{, }\DataTypeTok{x =} \StringTok{"year"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-8-1.pdf}
+The sixth chart shows us the major gfs description of the payments of
+the mining companies that pay more than a threshold of 180 million USD
+over the entire period covered by the database.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{18e7}\NormalTok{, company_name, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{gfs_description =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{12e7}\NormalTok{, gfs_description, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name, gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{fct_reorder}\NormalTok{(company_name, }\OperatorTok{-}\NormalTok{total_pay), }\DataTypeTok{y =}\NormalTok{ total_pay, }\DataTypeTok{fill =}\NormalTok{ gfs_description)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{ , }\DataTypeTok{colour=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\KeywordTok{nrgi_colors}\NormalTok{(),}\StringTok{"black"}\NormalTok{, }\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"purple"}\NormalTok{ , }\StringTok{"navy"}\NormalTok{ , }\StringTok{"orange"}\NormalTok{), }\DataTypeTok{na.value =} \KeywordTok{nrgi_colors}\NormalTok{()[}\DecValTok{5}\NormalTok{]) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{nrgi_theme}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle =} \DecValTok{90}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_discrete}\NormalTok{(}\DataTypeTok{labels =} \ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{str_wrap}\NormalTok{(x, }\DataTypeTok{width =} \DecValTok{30}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Top mining taxpayers's total contributions by main gfs description according to EITI summary data"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+The seventh chart in facet wrap shows us the major gfs description of
+the payments of the mining companies that pay more than a threshold of
+180 million USD each year covered by the database.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{drc_eiti }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(sector }\OperatorTok{==}\StringTok{ "Mining"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{company_name =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{18e7}\NormalTok{, company_name, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(gfs_description) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{gfs_description =} \KeywordTok{if_else}\NormalTok{(total_pay }\OperatorTok{>}\StringTok{ }\FloatTok{12e7}\NormalTok{, gfs_description, }\StringTok{"Other"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(company_name, gfs_description , year) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{total_pay =} \KeywordTok{sum}\NormalTok{(value_reported_as_USD, }\DataTypeTok{na.rm =}\NormalTok{ T)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ year, }\DataTypeTok{y =}\NormalTok{ total_pay, }\DataTypeTok{fill =} \KeywordTok{fct_reorder}\NormalTok{(gfs_description, }\OperatorTok{-}\NormalTok{total_pay))) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{ , }\DataTypeTok{colour=}\StringTok{"black"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\KeywordTok{nrgi_colors}\NormalTok{(),}\StringTok{"black"}\NormalTok{, }\StringTok{"red"}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"purple"}\NormalTok{ , }\StringTok{"navy"}\NormalTok{ , }\StringTok{"orange"}\NormalTok{), }\DataTypeTok{na.value =} \KeywordTok{nrgi_colors}\NormalTok{()[}\DecValTok{5}\NormalTok{]) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{nrgi_theme}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle =} \DecValTok{90}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_discrete}\NormalTok{(}\DataTypeTok{labels =} \ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{str_wrap}\NormalTok{(x, }\DataTypeTok{width =} \DecValTok{30}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\NormalTok{company_name)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{eiti-analysis_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+  \KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Top mining taxpayers's total contributions by main gfs description according to EITI summary data"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Cumulative payments - USD"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $y
+## [1] "Cumulative payments - USD"
+## 
+## $title
+## [1] "Top mining taxpayers's total contributions by main gfs description according to EITI summary data"
+## 
+## attr(,"class")
+## [1] "labels"
+\end{verbatim}
+
+
+\end{document}
