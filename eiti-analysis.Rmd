@@ -16,7 +16,13 @@ output:
 ## {.tabset}
 
 ### Purpose
-Cleaning and analyzing EITI data for the Democratic Republic of Congo
+Cleaning and analyzing EITI data for the Democratic Republic of Congo.
+
+We source EITI data from www.resourcedata.org, which itselfs aggregates EITI summary data in open data format shared by the international EITI secretariat here: https://eiti.org/explore-data-portal  
+
+#### Warning: this webpage is a work in progress, shared for limited consultations only. Please keep in mind that the data may require additional cleaning. There could be errors in the EITI summary data, if not in the EITI reports themselves.The formatting of the plots is also tentative and will be refined at a later stage.
+
+#### We welcome all comments on the data sourced, the cleaning process, and preliminary plot analysis. Please email Thomas Lassourd <tlassourd@resourcegovernance.org> or Jean Pierre Okenda <jpokenda@resourcegovernance.org>.    
 
 ```{r message=FALSE}
 pacman::p_load(tidyverse, ggthemes, nrgiR , scales)
@@ -26,8 +32,16 @@ if (!exists("eiti_company")) {
   eiti_company <- read_csv("https://www.resourcedata.org/dataset/7dd3c8b6-9256-4e34-9360-1519efd87407/resource/bba3b646-131b-47c5-9f4c-37019f896575/download/company-payments.csv")
   
 }
+```
 
-## reconciliation files (made from initially extracting all unique occurences of company names and names of revenue streams, matching them to clean names and adding a sector variable (mining vs oil))
+Now that we have the data ready let's do some clean up.
+
+### Cleaning
+
+We are only interested in data from DRC. Let's narrow down the selection and clean the company names, the gfs codes, the gfs descriptions and the name of the revenue streams, using specifically made files (available upon request, or in the Github repository: https://github.com/ThomasNRGI/EITI_DRC)
+
+```{r}
+## We import the reconciliation files in excel into a dataframe (made from initially extracting all unique occurences of company names and names of revenue streams, matching them to clean names and adding a sector variable (mining vs oil))
 company_reconcile <- readxl::read_excel("reconcile.xlsx", sheet = "company_names") %>% 
   mutate(company_name_clean = str_squish(company_name_clean)) %>%
   distinct()
@@ -38,15 +52,7 @@ rev_code_reconcile <- readxl::read_excel("reconcile.xlsx", sheet = "rev_codes") 
          name_of_revenue_stream_clean = str_squish(name_of_revenue_stream_clean) ) %>%
   distinct()
 
-```
-
-Now that we have the data ready let's do some clean up.
-
-### Cleaning
-
-We are only interested in data from DRC. Let's clean the company names, the gfs codes, the gfs descriptions and the name of the revenue streams, using our previous files. Below we add the clean columns and then delete the original variables.
-
-```{r}
+## We filter eiti summary data for DRC specifically, we add the clean columns for the company names, the gfs codes, the gfs descriptions and the name of the revenue streams and then delete the original variables.
 drc_eiti <- eiti_company %>% 
   filter(country == "Democratic Republic of Congo") %>% 
   left_join(., rev_code_reconcile, by = "name_of_revenue_stream") %>% 
@@ -56,6 +62,7 @@ drc_eiti <- eiti_company %>%
             gfs_description = gfs_description_clean,
             name_of_revenue_stream = name_of_revenue_stream_clean) %>%
   select ( -c( company_name_clean , gfs_code_clean, gfs_description_clean ,  name_of_revenue_stream_clean)) 
+
 ```
 
 ### Create functions for sorting observations
@@ -110,7 +117,7 @@ The data is ready for some simple descriptive analysis.
 
 The first chart shows us the total amount of payment by year. 
 
-Comment: large drop in mining revenue in 2016
+Comment: large drop in mining revenue in 2016. Does it conform to EITI reports and other data points?
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -147,7 +154,7 @@ get_plot_data( drc_eiti, company_name , threshold = 18e7) %>%
 
 The third chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
 
-Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years.
+Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years, 2012 and 2014 respectively.
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -170,6 +177,8 @@ drc_eiti %>%
 ```
 
 The fourth chart shows us the major payment types, by gfs description, that contributed more than 120 million USD over the entire period covered by the database.
+
+Note: royalties are royalties to the State ("redevance"). Royalties to SOEs are categorized within "paid to state-owned enterprises".
 
 Comments: 
 
@@ -261,11 +270,11 @@ drc_eiti %>%
   labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Cumulative payments")
 ```
 
-The seventh chart shows us the customs payments of the mining companies that pay more than a threshold of 20 million USD over the entire period covered by the database.
+The seventh chart shows us the mining companies that pay more than a threshold of 20 million USD of customs payments over the entire period covered by the database.
 
 Comments:
 
-1.  Confirms that KCC, MUMI, TFM and Kibali have paid very large sums in custom duties. 
+1.  Confirms that KCC, MUMI, TFM and Kibali have paid very large sums in custom duties. Need to look into it. Possible explanations: fuel imports and other inputs?
 
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -290,7 +299,59 @@ drc_eiti %>%
   labs(title ="Top mining payers of custom duties according to EITI summary data", y = "Cumulative payments")
 ```
 
-The eight chart in facet wrap shows us the major gfs description of the payments of the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
+The eigth and ninth charts show us the details of the SOE payments by company and by year.
+
+Comments:
+
+1. Royalties are the first reveue flow to SOEs, followed by Pas de Porte (bonuses)
+2. KCC is by far the largest payer to SOEs
+3. PAs de porte were the highest between 2010 and 2012
+4. Frais de consultance only show up from TFM and MUMI. But are very regular payments between 2013 and 2016. 
+5. Fonds pour la vente des scories (payments to GCM for deposit sales) only show up from STL and Rubamin. But are significant payment from 2013 to 2016.
+6. SOEs receive annually between 60 and 180 million USD in total payments from mining companies.
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(sector == "Mining" ,
+         gfs_description == "Delivered/paid to state-owned enterprise(s)"
+         ) %>% 
+  group_by(company_name) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(company_name = if_else(total_pay > 1e7, company_name, "Other")) %>% 
+  group_by(company_name, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = fct_reorder(company_name, -total_pay), y = total_pay, fill = name_of_revenue_stream)) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  coord_flip() +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Top mining payers to SOEs according to EITI summary data", y = "Cumulative payments")
+```
+
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(sector == "Mining" ,
+         gfs_description == "Delivered/paid to state-owned enterprise(s)"
+         ) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual payments to SOEs according to EITI summary data", y = "Annual payments")
+```
+
+The tenth chart in facet wrap shows us the major gfs description of the payments of the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
 
 Comments:
 
@@ -322,12 +383,12 @@ drc_eiti %>%
   theme(axis.text.x = element_text(angle = 90)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  facet_wrap(~company_name) +
+  facet_wrap(~str_wrap(company_name)) +
   labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Total annual payments")
 ```
 
 
-The ninth chart in facet wrap shows us how much payments are made in each gfs category each year by the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
+The eleventh chart in facet wrap shows us how much payments are made in each gfs category each year by the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
 
 Comments:
 
@@ -362,3 +423,7 @@ drc_eiti %>%
   facet_wrap(~gfs_description) +
   labs(title ="Annual payments by gfs description of the top mining taxpayers naccording to EITI summary data", y = "Total annual payments")
 ```
+
+### Next steps
+
+We will look at payments to different government agencies - especially for SOE payments. This requires to look at the EITI summary data from the perspective of collecting agencies. 
