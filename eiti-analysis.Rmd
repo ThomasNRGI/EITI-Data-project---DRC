@@ -478,6 +478,7 @@ drc_eiti %>%
 
 ### Company deep dive
 We look at the payment structure of some of the major companies reporting in DRC:
+
 #### 1/ Banro
 ```{r, fig.width=12}
 drc_eiti %>% 
