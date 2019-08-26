@@ -569,6 +569,269 @@ drc_eiti %>%
   labs(title ="2016 payments of Banro by project according to EITI summary data", y = "2016 payments")
 ```
 
+
+2/ Glencore PLC
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Glencore PLC") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 40e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual payments of Glencore PLC according to EITI summary data", y = "Annual payments")
+```
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Glencore PLC") %>% 
+    group_by(year, company_name) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(company_name, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual payments of Glencore PLC by project according to EITI summary data", y = "Annual payments")
+```
+
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(year == "2016" ,
+         Additional_company_name == "Glencore PLC"
+         ) %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(company_name, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = company_name , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("2016 payments of Glencore PLC by project according to EITI summary data", width = 70), y = "2016 payments")
+```
+
+3/ Eurasian Resource Group
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Eurasian Resources Group") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 40e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap( "Annual payments of Eurasian Resources Group according to EITI summary data", width = 60), y = "Annual payments")
+```
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Eurasian Resources Group") %>% 
+    group_by(year, company_name) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(company_name, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual payments of Eurasian Resources Group by project according to EITI summary data", y = "Annual payments")
+```
+
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(year == "2016" ,
+         Additional_company_name == "Eurasian Resources Group"
+         ) %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(company_name, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = company_name , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("2016 payments of Eurasian Resources Group by project according to EITI summary data", width = 60), y = "2016 payments")
+```
+
+4/ Ivanhoe Mines Limited
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Ivanhoe Mines Limited") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("Annual payments of Ivanhoe Mines Limited according to EITI summary data", width = 70), y = "Annual payments")
+```
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Ivanhoe Mines Limited") %>% 
+    group_by(year, company_name) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(company_name, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual payments of Ivanhoe Mines Limited by project according to EITI summary data", y = "Annual payments")
+```
+
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(year == "2016" ,
+         Additional_company_name == "Ivanhoe Mines Limited"
+         ) %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e5, name_of_revenue_stream, "Other")) %>% 
+  group_by(company_name, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = company_name , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title =str_wrap("2016 payments of Ivanhoe Mines Limited by project according to EITI summary data", width = 70), y = "2016 payments")
+```
+
+5/ TFM
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Lundin Mining Corporation") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 5e7, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("Annual payments of TFM according to EITI summary data", width = 70), y = "Annual payments")
+```
+
+6/ Alphamin Resources Corporation
+
+Note: only 2016 data is available. Alphamin only owns one project in DRC.
+
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(year == "2016" ,
+         Additional_company_name == "Alphamin Resources Corporation"
+         ) %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e5, name_of_revenue_stream, "Other")) %>% 
+  group_by(company_name, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = company_name , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("2016 payments of Alphamin Resources Corporation Bisie Tin project according to EITI summary data", width = 70), y = "2016 payments")
+```
+7/ Barrick Gold (Holdings) Limited (formerly Randgold Resources Limited)
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Barrick Gold (Holdings) Limited (formerly Randgold Resources Limited)") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e3, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "thousand USD", scale = 1e-3, sep = " ")) +
+  labs(title = str_wrap("Annual payments of Randgold/Barrick according to EITI summary data", width = 70), y = "Annual payments")
+```
+
+8/ Loncor Resources Congo
+
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Loncor Resources Congo") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e3, name_of_revenue_stream, "Other")) %>% 
+  group_by(year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "thousand USD", scale = 1e-3, sep = " ")) +
+  labs(title = str_wrap("Annual payments of Loncor according to EITI summary data", width = 70), y = "Annual payments")
+```
+
 ### Next steps
 
 We will look at payments to different government agencies - especially for SOE payments. This requires to look at the EITI summary data from the perspective of collecting agencies. 
