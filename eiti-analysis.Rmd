@@ -27,10 +27,9 @@ We source EITI data from www.resourcedata.org, which itselfs aggregates EITI sum
 ```{r message=FALSE}
 pacman::p_load(tidyverse, ggthemes, nrgiR , scales)
 
-## get the EITI data from resource data (only downloads once a session)
+## get the EITI company data from resource data (only downloads once a session)
 if (!exists("eiti_company")) {
   eiti_company <- read_csv("https://www.resourcedata.org/dataset/7dd3c8b6-9256-4e34-9360-1519efd87407/resource/bba3b646-131b-47c5-9f4c-37019f896575/download/company-payments.csv")
-  
 }
 ```
 
@@ -45,12 +44,12 @@ The cleaning process requires some decisions and assumptions regarding project /
 + When projects are also reporting under mandatory listing disclosure rules, the project name in resourceprojects.org was chosen, if compatible.
 + When project names have changed, we use the most recent project name for all years in the data.
 + When projects have merged, we attribute the latest project name to the separate projects prior to the merger. E.g. payments from DCK and KOL, which merged and created KCC in 2008, are attributed to KCC. Payments from Kanuski are attributed to Mutanda.
-+ We added a column "additional company name" to provide more data where relevant (majority owner, historic project names, etc.)
++ We added a column "additional company name" to provide more data where relevant (name of company in mandatory disclosure reporting, majority owner, historic project names, etc.)
 + Anvil Mining Congo ( AMC) and MMG Kinsevere (MMG) are separate projects.
 
 Here are some of the main choices we have made on gfs description and gfs codes:
 
-+ Every revenue stream to state-owned companies was included in the category gfs code 1415E32 / gfs description: "Delivered/paid to state-owned enterprise(s)", regardless of the type of revenue. This includes bonus (pas-de-porte), royalties, dividend payments, Loyers d'amodiation et/ou rente mensuelle, Fonds versés a la GCM pour la vente des scories, Redevance supplémentaires sur les réserves additionnelles, Avance contractuelle sur dividendes ou royalties futurs, Frais de consultance, Vente de Licence, Frais de renonciation au droit de préemption.
++ Every revenue stream to state-owned companies was included in the category gfs code 1415E32 / gfs description: "Delivered/paid to state-owned enterprise(s)", regardless of the type of revenue. This includes bonus (pas-de-porte), royalties, dividend payments, equity sales (cessions de parts sociales), rent payments (loyers d'amodiation et/ou rente mensuelle), sale of tailings by GCM (Fonds versés a la GCM pour la vente des scories), additional royalty (redevance supplémentaires sur les réserves additionnelles), advances on future dividend and royalty payments (avance contractuelle sur dividendes ou royalties futurs), consulting fees (frais de consultance), sale of mining licenses (vente de Licence), fee for abandonning prehemption rights (frais de renonciation au droit de préemption).
 + Other re-categorizations can be found in the "reconcile" excel sheet.
 
 
@@ -113,7 +112,6 @@ get_plot_data_2 <- function(df, g_var, h_var, threshold) {
 
 #### Customized pie chart
 Create a blank theme :
-
 ```{r}
 blank_theme <- theme_minimal()+
   theme(
@@ -132,7 +130,6 @@ The data is ready for some simple descriptive analysis.
 The first chart shows us the total amount of payment by year. 
 
 Comment: large drop in mining revenue in 2016. Does it conform to EITI reports and other data points?
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -142,14 +139,13 @@ drc_eiti %>%
     ggplot(aes(x = year, y = total_pay)) +
     geom_col() +
     theme_fivethirtyeight() +
-    scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+    scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9 , sep = " ")) +
     labs(title ="Total annual contributions according to EITI summary data", x = "year", y = "Cumulative payments")
 ```
 
 The second chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
 
 Comment: the majority of payments made during that period comes from 12 companies
-
 ````{r, fig.width=12}
 get_plot_data( drc_eiti, company_name , threshold = 18e7) %>% 
   ggplot(data = ., mapping = aes(x = fct_reorder(x_var, -total_pay), y = total_pay)) +
@@ -157,7 +153,7 @@ get_plot_data( drc_eiti, company_name , threshold = 18e7) %>%
   coord_flip() +
   theme_economist() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
-  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
   labs(title = "Top mining taxpayers's total contributions according to EITI reports", 
        y = "Cumulative payments") +
   theme(
@@ -169,7 +165,6 @@ get_plot_data( drc_eiti, company_name , threshold = 18e7) %>%
 The third chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
 
 Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years, 2012 and 2014 respectively.
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -184,8 +179,8 @@ drc_eiti %>%
   geom_bar(stat = "identity" , colour="black") +
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Total annual payments") +
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Total annual payments" , fill = "Companies") +
   theme(
   )
 ```
@@ -197,8 +192,7 @@ Note: royalties are royalties to the State ("redevance"). Royalties to SOEs are 
 Comments: 
 
 1. Surprisingly custom payments come out first, while one would expect it to be lower, based on cash flow models.
-2. Payments to SOEs is the third largest payment. 
-    
+2. Payments to SOEs is the second largest payment. 
 ```{r, fig.width=12}
 get_plot_data( drc_eiti, gfs_description , threshold = 12e7) %>% 
   ggplot(aes(x = fct_reorder(x_var, -total_pay), y = total_pay)) +
@@ -206,28 +200,18 @@ get_plot_data( drc_eiti, gfs_description , threshold = 12e7) %>%
   coord_flip() +
   theme_economist() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 25)) +
-  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title ="Main revenue streams according to EITI summary data", x = "year", y = "Cumulative payments - USD")
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Main revenue streams from mining according to EITI summary data", x = "", y = "Cumulative payments - USD")
 ```
-```{r, fig.width=12}
-get_plot_data( drc_eiti, gfs_description , threshold = 12e7) %>% 
-  ggplot(aes(x = " ", y = total_pay, fill = fct_reorder(x_var, -total_pay))) +
-  geom_bar(width = 1, stat = "identity") +
-  coord_polar("y", start=0) +
-  scale_fill_grey() +  
-  blank_theme +
-  theme(axis.text.x=element_blank()) +
-    labs(title ="Main revenue streams according to EITI summary data", x = "year", y = "Cumulative payments - USD")
-```
-
 
 The fifth chart shows us the major payment types, by gfs description, that contributed more than 120 million USD over the entire period covered by the database, on an annual basis.
 
 Comments:
 
 1. Custom duties are really high from 2013 to 2015.
-2. Large bonus payment in 2012 (Sicomines?)
-
+2. Large bonus payment in 2012 (Sicomines)
+3. Taxes on income are important in later years 2014-16, though only really high in 2015, even though 2015 saw a drop in copper prices.
+4. Fines are a non-insignificant source of revenue. Questions tax policy and administration efficiency / governance.
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -243,8 +227,8 @@ drc_eiti %>%
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() +
   theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title = str_wrap("Top mining taxpayers's annual contributions according to EITI summary data"), x = "year", y = str_wrap("Total annual payments"))
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title = str_wrap("Mining taxpayers' main annual contributions according to EITI summary data"), x = "year", y = str_wrap("Total annual payments"))
 ```
 
 ### Advanced visual description of the data
@@ -253,11 +237,10 @@ The sixth chart shows us the major gfs description of the payments of the mining
 
 Comments:
 
-1. Mutanda, KCC, TFM and Kibali pay a lot of custom duties: investigate
-2. KCC, Metalkol, TFM, Ruahsi, Boss, and Mutanda pay significant amount to SOEs.
+1. Mutanda, KCC, TFM and Kibali pay a lot of custom duties: need to investigate.
+2. KCC, Metalkol, TFM, Ruashi, Kinsevere, SEK, and Mutanda pay significant amount to SOEs.
 3. Very large bonus payments from Sicomines and Frontier.
 4. Very little royalties paid by Metalkol and Sicomines. 
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -279,8 +262,8 @@ drc_eiti %>%
   theme(axis.text.x = element_text(angle = 90)) +
   coord_flip() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
-  scale_y_continuous(labels = unit_format(unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Cumulative payments")
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", x = "Companies", y = "Cumulative payments")
 ```
 
 The seventh chart shows us the mining companies that pay more than a threshold of 20 million USD of customs payments over the entire period covered by the database.
@@ -288,7 +271,6 @@ The seventh chart shows us the mining companies that pay more than a threshold o
 Comments:
 
 1.  Confirms that KCC, Mutanda, TFM and Kibali have paid very large sums in custom duties. Need to look into it. Possible explanations: fuel imports and other inputs?
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining" ,
@@ -309,21 +291,21 @@ drc_eiti %>%
   coord_flip() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Top mining payers of custom duties according to EITI summary data", y = "Cumulative payments")
+  labs(title ="Top mining payers of custom duties according to EITI summary data", x = "Companies" , y = "Cumulative payments", fill="")
 ```
 
-The eigth and ninth charts show us the details of the SOE payments by company and by year.
+The eigth and ninth and tenth charts show us the details of the SOE payments by company and by year.
 
 Comments:
 
-1. Royalties are the first reveue flow to SOEs, followed by Pas de Porte (bonuses)
-2. KCC is by far the largest payer to SOEs
+1. Equity sales are the first reveue flow to SOEs, followed by Royalties and Pas de Porte (bonuses)
+2. KCC is by far the largest payer to SOEs, followed by Mutanda only because of a large equity sale in 2011.
 3. PAs de porte were the highest between 2010 and 2012
 4. Frais de consultance only show up from TFM and Mutanda. But are very regular payments between 2013 and 2016. 
 5. Fonds pour la vente des scories (payments to GCM for deposit sales) only show up from STL and Rubamin. But are significant payment from 2013 to 2016.
-6. SOEs receive annually between 60 and 180 million USD in total payments from mining companies.
+6. SOEs receive annually between 60 and 180 million USD in total payments from mining companies, or between 100 and 300 million USD if we had revenue collected from equity sales.
 7. Loyers d'amodiation / rente mensuelle is only a significan payment from MMG Kinsevere, and particulary high in 2012. 
-
+8. Very large revenue from equity sales from Mutanda (2011), SEK (2014), Congo Dongfang mining company (2015) and Metalkol (2016).
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining" ,
@@ -344,10 +326,8 @@ drc_eiti %>%
   coord_flip() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Top mining payers to SOEs according to EITI summary data", y = "Cumulative payments")
+  labs(title ="Top mining payers to SOEs according to EITI summary data", x = "Companies" , y = "Cumulative payments", fill = "Revenue stream")
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining" ,
@@ -364,17 +344,31 @@ drc_eiti %>%
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
   labs(title ="Annual payments to SOEs according to EITI summary data", y = "Annual payments")
 ```
+```{r, fig.width=12}
+drc_eiti %>% 
+    filter(sector == "Mining" ,
+         name_of_revenue_stream == "Cession d'actifs ou parts sociales"
+         ) %>%  
+  group_by(company_name, year) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = year, y = total_pay, fill = fct_reorder(company_name, total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Revenue from equity sales by company according to EITI summary data", x = "year", y = "annual revenue from equity sales", fill = "Companies") +
+  theme(
+  )
+```
 
-The tenth eleventh and twelth charts show us the details of the payments from the gfs category Ordinary taxes on income, profits and capital gains by company and by year.
+The eleventh and twelth charts show us the details of the payments from the gfs category Ordinary taxes on income, profits and capital gains by company and by year.
 
 Comments:
 
-1.  Taxes on income do not follow a regular pattern because of one-off payments for sale of state equity => change gfs category? 
-2.  TFM and Mutanda pay by far the most income tax.
-3.  Companies pay very little witholding tax on dividends (impot mobilier).
-4.  Income tax payments have been rapidly increasing between 2012 and 2015, with a sharp drop in 2016. Is it linked to specific events at TFM and Mutanda or the consequence of falling copper prices?
-5.  Chart 12 shows which companies have bought equity from the state in which year, so we can identify if these were payments to the state or to state owned companies. 
-
+1.  TFM and Mutanda pay by far the most income tax.
+2.  Companies pay very little witholding tax on dividends (impot mobilier), except KCC and Mutanda.
+3.  Income tax payments have been rapidly increasing between 2012 and 2015, with a sharp drop in 2016. Is it linked to specific events at TFM and Mutanda or the consequence of falling copper prices?
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining" ,
@@ -387,7 +381,7 @@ drc_eiti %>%
   group_by(company_name, name_of_revenue_stream) %>% 
   summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
   ungroup() %>% 
-    ggplot(aes(x = fct_reorder(company_name, -total_pay), y = total_pay, fill = name_of_revenue_stream)) +
+    ggplot(aes(x = company_name, y = total_pay, fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
   geom_bar(stat = "identity" , colour="black") +
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() + 
@@ -395,10 +389,8 @@ drc_eiti %>%
   coord_flip() +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Top mining payers in ordinary taxes on income, profits and capital gains  according to EITI summary data", y = "Cumulative payments")
+  labs(title ="Top mining payers in ordinary taxes on income, profits and capital gains  according to EITI summary data", x = "Companies", y = "Cumulative payments" , fill = "Name of revenue stream" )
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining" ,
@@ -413,39 +405,19 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of ordinary taxes on income, profits and capital gains according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of ordinary taxes on income, profits and capital gains according to EITI summary data", y = "Annual payments" , fill = "Name of revenue stream")
 ```
-
-```{r, fig.width=12}
-drc_eiti %>% 
-    filter(sector == "Mining" ,
-         name_of_revenue_stream == "Cession d'actifs ou parts sociales"
-         ) %>%  
-  group_by(company_name, year) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = total_pay, fill = fct_reorder(company_name, total_pay))) +
-  geom_bar(stat = "identity" , colour="black") +
-  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(unit = "mm. USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Revenue from equity sales by company according to EITI summary data", x = "year", y = "annual revenue from equity sales") +
-  theme(
-  )
-```
-
 
 The thirteenth chart in facet wrap shows us the major gfs description of the payments of the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
 
 Comments:
 
 1. KCC's payments almost stop in 2016
-2. Companies that have a "normal" payment profile over time: Boss, MMG, Ruashi, Kibali, Frontier.
+2. Companies that have a "normal" payment profile over time: Boss, MMG, Ruashi, Kibali.
 3. TFM: exceptionnally large income tax payment in 2015
-4. Kipoi: exceptionnally large income tax payment in 2014
+4. SEK Kipoi: exceptionnally large payment in 2014: equity sale
 5. Mutanda: exceptionnally large income tax payment in 2011 and 2015
 6. Meltalkol: exceptionnally large income tax payment in 2016
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -467,21 +439,18 @@ drc_eiti %>%
   theme(axis.text.x = element_text(angle = 90)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  facet_wrap(~str_wrap(company_name)) +
+  facet_wrap(~str_wrap(company_name , width = 20)) +
   labs(title ="Top mining taxpayers's total contributions by main gfs description according to EITI summary data", y = "Total annual payments")
 ```
-
 
 The fourteenth chart in facet wrap shows us how much payments are made in each gfs category each year by the mining companies that pay more than a threshold of 180 million USD each year covered by the database.
 
 Comments:
 
-1. Why did Mutanda pay so much income tax as a one-off payment in 2012?
-2. Metalkol suddenly starts paying income tax in 2016
+1. Mutanda's a one-off payment in 2011 stands out.
 3. Taxes on exports are just a little lower than royalties, but have no basis in the mining code
 4. Custom duties in 2013-2015 seem disproportionate. 
-5. Taxes on income show a strange pattern, very dependent on individual company payments.
-
+5. Taxes on income show an exceptionnally large payment in 2015.
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -503,16 +472,13 @@ drc_eiti %>%
   theme(axis.text.x = element_text(angle = 90)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  facet_wrap(~gfs_description) +
+  facet_wrap(~str_wrap(gfs_description , width = 20)) +
   labs(title ="Annual payments by gfs description of the top mining taxpayers naccording to EITI summary data", y = "Total annual payments")
 ```
 
 ### Company deep dive
-
 We look at the payment structure of some of the major companies reporting in DRC:
-
-1/ Banro
-
+#### 1/ Banro
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Banro Corporation") %>% 
@@ -529,9 +495,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Banro according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Banro according to EITI summary data", y = "Annual payments" , fill = "Name of revenue stream")
 ```
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Banro Corporation") %>% 
@@ -544,10 +509,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Banro by project according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Banro by project according to EITI summary data", y = "Annual payments", fill = "Companies")
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(year == "2016" ,
@@ -565,13 +528,11 @@ drc_eiti %>%
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="2016 payments of Banro by project according to EITI summary data", y = "2016 payments")
+  scale_y_continuous(labels = unit_format(accuracy = 1, unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title ="2016 payments of Banro by project according to EITI summary data", x = "Projects" , y = "2016 payments" ,fill = "Name of revenue stream" )
 ```
 
-
-2/ Glencore PLC
-
+#### 2/ Glencore PLC
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Glencore PLC") %>% 
@@ -588,9 +549,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Glencore PLC according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Glencore PLC according to EITI summary data", y = "Annual payments",fill = "Name of revenue stream")
 ```
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Glencore PLC") %>% 
@@ -603,10 +563,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Glencore PLC by project according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Glencore PLC by project according to EITI summary data", y = "Annual payments",fill = "Projects")
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(year == "2016" ,
@@ -625,11 +583,10 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap("2016 payments of Glencore PLC by project according to EITI summary data", width = 70), y = "2016 payments")
+  labs(title = str_wrap("2016 payments of Glencore PLC by project according to EITI summary data", width = 70), x = "Projects", y = "2016 payments", fill = "Name of revenue stream")
 ```
 
-3/ Eurasian Resource Group
-
+#### 3/ Eurasian Resource Group
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Eurasian Resources Group") %>% 
@@ -646,9 +603,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap( "Annual payments of Eurasian Resources Group according to EITI summary data", width = 60), y = "Annual payments")
+  labs(title = str_wrap( "Annual payments of Eurasian Resources Group according to EITI summary data", width = 60), y = "Annual payments", fill = "Name of revenue stream")
 ```
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Eurasian Resources Group") %>% 
@@ -661,10 +617,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Eurasian Resources Group by project according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Eurasian Resources Group by project according to EITI summary data", y = "Annual payments" , fill = "Projects")
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(year == "2016" ,
@@ -683,11 +637,10 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap("2016 payments of Eurasian Resources Group by project according to EITI summary data", width = 60), y = "2016 payments")
+  labs(title = str_wrap("2016 payments of Eurasian Resources Group by project according to EITI summary data", width = 60), x = "Projects" , y = "2016 payments", fill = "Name of revenue stream")
 ```
 
-4/ Ivanhoe Mines Limited
-
+#### 4/ Ivanhoe Mines Limited
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Ivanhoe Mines Limited") %>% 
@@ -704,9 +657,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap("Annual payments of Ivanhoe Mines Limited according to EITI summary data", width = 70), y = "Annual payments")
+  labs(title = str_wrap("Annual payments of Ivanhoe Mines Limited according to EITI summary data", width = 70), y = "Annual payments" , fill = "Name of revenue stream")
 ```
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Ivanhoe Mines Limited") %>% 
@@ -719,10 +671,8 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title ="Annual payments of Ivanhoe Mines Limited by project according to EITI summary data", y = "Annual payments")
+  labs(title ="Annual payments of Ivanhoe Mines Limited by project according to EITI summary data", y = "Annual payments", fill = "Projects")
 ```
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(year == "2016" ,
@@ -741,11 +691,10 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title =str_wrap("2016 payments of Ivanhoe Mines Limited by project according to EITI summary data", width = 70), y = "2016 payments")
+  labs(title =str_wrap("2016 payments of Ivanhoe Mines Limited by project according to EITI summary data", width = 70), x = "Projects", y = "2016 payments", fill = "Name of revenue stream")
 ```
 
-5/ TFM
-
+#### 5/ TFM
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Lundin Mining Corporation") %>% 
@@ -762,14 +711,11 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap("Annual payments of TFM according to EITI summary data", width = 70), y = "Annual payments")
+  labs(title = str_wrap("Annual payments of TFM according to EITI summary data", width = 70), y = "Annual payments" , fill = "Name of revenue stream")
 ```
 
-6/ Alphamin Resources Corporation
-
+#### 6/ Alphamin Resources Corporation
 Note: only 2016 data is available. Alphamin only owns one project in DRC.
-
-
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(year == "2016" ,
@@ -787,11 +733,11 @@ drc_eiti %>%
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
-  labs(title = str_wrap("2016 payments of Alphamin Resources Corporation Bisie Tin project according to EITI summary data", width = 70), y = "2016 payments")
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("2016 payments of Alphamin Resources Corporation Bisie Tin project according to EITI summary data",  width = 70), x = "" , y = "2016 payments" , fill = "Name of revenue stream")
 ```
-7/ Barrick Gold (Holdings) Limited (formerly Randgold Resources Limited)
 
+#### 7/ Barrick Gold (Holdings) Limited (formerly Randgold Resources Limited)
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Barrick Gold (Holdings) Limited (formerly Randgold Resources Limited)") %>% 
@@ -808,11 +754,10 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "thousand USD", scale = 1e-3, sep = " ")) +
-  labs(title = str_wrap("Annual payments of Randgold/Barrick according to EITI summary data", width = 70), y = "Annual payments")
+  labs(title = str_wrap("Annual payments of Randgold/Barrick according to EITI summary data", width = 70), y = "Annual payments" , fill = "Name of revenue stream")
 ```
 
-8/ Loncor Resources Congo
-
+#### 8/ Loncor Resources Congo
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(Additional_company_name == "Loncor Resources Congo") %>% 
@@ -829,9 +774,138 @@ drc_eiti %>%
   nrgi_theme() + 
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = unit_format(unit = "thousand USD", scale = 1e-3, sep = " ")) +
-  labs(title = str_wrap("Annual payments of Loncor according to EITI summary data", width = 70), y = "Annual payments")
+  labs(title = str_wrap("Annual payments of Loncor according to EITI summary data", width = 70), y = "Annual payments" , fill = "Name of revenue stream")
 ```
 
-### Next steps
+### Payments to different government agencies
 
-We will look at payments to different government agencies - especially for SOE payments. This requires to look at the EITI summary data from the perspective of collecting agencies. 
+We look at payments to different government agencies - especially for SOE payments. This requires to look at the EITI summary data from the perspective of collecting agencies. So we download a different eiti summary data, containing government agencies that received extractive revenue. We clean that data and then describe it visually. 
+
+```{r message=FALSE}
+pacman::p_load(tidyverse, ggthemes, nrgiR , scales)
+
+## get the EITI entity data from resource data (only downloads once a session)
+
+ if (!exists("eiti_entity")) {
+  eiti_entity <- read_csv("https://www.resourcedata.org/dataset/7dd3c8b6-9256-4e34-9360-1519efd87407/resource/4e4462a5-6029-4ae3-a4cc-66ad6ccc6d70/download/revenues-received-by-government-agencies.csv")
+}
+``` 
+
+```{r message=FALSE}
+## We import the reconciliation files in excel into a dataframe (made from initially extracting all unique occurences of government agency names and names of revenue streams, matching them to clean names)
+entity_reconcile <- readxl::read_excel("reconcile.xlsx", sheet = "entity_names") %>% 
+  mutate(government_agency_name_clean = str_squish(government_agency_name_clean)) %>%
+  distinct()
+
+rev_code_reconcile_2 <- readxl::read_excel("reconcile.xlsx", sheet = "rev_codes") %>% 
+  mutate(gfs_code_clean = str_squish(gfs_code_clean) , 
+         gfs_description_clean = str_squish(gfs_description_clean) ,
+         name_of_revenue_stream_clean = str_squish(name_of_revenue_stream_clean) ) %>%
+  distinct()
+
+## We filter eiti summary data for DRC specifically, we add the clean columns for the government agency names, the gfs codes, the gfs descriptions and the name of the revenue streams and then delete the original variables.
+drc_eiti_entity <- eiti_entity %>% 
+  filter(country == "Democratic Republic of Congo") %>% 
+  left_join(., rev_code_reconcile_2, by = "name_of_revenue_stream") %>% 
+  left_join(., entity_reconcile, by = "government_agency_name") %>% 
+     mutate(government_agency_name = government_agency_name_clean, 
+            gfs_code = gfs_code_clean, 
+            gfs_description = gfs_description_clean,
+            name_of_revenue_stream = name_of_revenue_stream_clean) %>%
+  select ( -c( government_agency_name_clean , gfs_code_clean, gfs_description_clean ,  name_of_revenue_stream_clean)) 
+
+```
+Note: it is not possible to separate oil from mining revenues in the eiti entity dataset, is it? 
+
+Let's visualize the data.
+
+#### First chart: total annual contributions.
+
+Comment: differences with the company data: more data recorded in earlier years, and grouping of oil and mining payments to government agencies.
+```{r, fig.width=12}
+drc_eiti_entity %>% 
+  group_by(year) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+    ggplot(aes(x = year, y = total_pay)) +
+    geom_col() +
+    theme_fivethirtyeight() +
+    scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "billion USD", scale = 1e-9, sep = " ")) +
+    labs(title ="Total annual contributions according to EITI entity summary data", x = "year", y = "Cumulative payments")
+```
+
+#### Second chart: total annual contributions to main recipients
+
+Comments:
+
+1. Tax authority is the main recepient, closely followed by the customs authority. It confirms the revenue description of the company data.
+2. DGRAD, SOEs and the Katanga provincial governments are also major recipients of extractive revenue.
+3. The unassigned payments are mostly from 2008 and 2009.
+```{r, fig.width=12}
+drc_eiti_entity %>% 
+  group_by(government_agency_name) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(government_agency_name = if_else(total_pay > 18e7, government_agency_name, "Other")) %>% 
+  group_by(government_agency_name, year) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = year, y = total_pay, fill = fct_reorder(government_agency_name, total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 ,unit = "billion USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top recipients of oil and mining revenue according to EITI summary data", x = "year", y = "Total annual payments" , fill = "Name of revenue stream") +
+  theme(
+  )
+```
+
+#### Third chart: total annual contributions to main recipients, broken down by gfs description of revenue streams
+
+Comments:
+
+1. DGRAD is an important recipient because it manages royalties, bonus and payments delivered to the government (including profit oil from PSAs).
+2. Custom payments are massive and consitute most of the custom authority large revenue.
+```{r, fig.width=12}
+drc_eiti_entity %>% 
+  group_by(government_agency_name) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(government_agency_name = if_else(total_pay > 10e6, government_agency_name, "Other")) %>% 
+  group_by(gfs_description) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(gfs_description = if_else(total_pay > 2e8, gfs_description, "Other")) %>% 
+  group_by(government_agency_name, gfs_description) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = fct_reorder(government_agency_name, -total_pay), y = total_pay, fill = gfs_description)) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  coord_flip() +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_y_continuous(labels = unit_format(accuracy = 0.1 ,unit = "billion USD", scale = 1e-9, sep = " ")) +
+  labs(title ="Top recipients of oil and mining revenue by main gfs description according to EITI summary data", x="", y = "Cumulative payments")
+```
+
+#### Fourth chart: timing of equity sales by SOEs. It matches the company data.
+```{r, fig.width=12}
+
+drc_eiti_entity %>% 
+  filter(name_of_revenue_stream == "Cession d'actifs ou parts sociales") %>%
+  group_by(year, government_agency_name) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = year , y = total_pay, fill = government_agency_name)) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million. USD", scale = 1e-6, sep = " ")) +
+  labs(title ="Annual revenue to SOEs from equity sales according to EITI summary data", y = "Annual payments", fill ="")
+
+```
+  
+  
