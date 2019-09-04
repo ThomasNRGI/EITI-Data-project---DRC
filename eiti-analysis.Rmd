@@ -109,7 +109,6 @@ get_plot_data_2 <- function(df, g_var, h_var, threshold) {
     ungroup()
 }
 
-get_plot_data_2(drc_eiti, h_var = year, g_var = company_name, 1e8)
 ```
 
 
