@@ -50,6 +50,7 @@ The cleaning process requires some decisions and assumptions regarding project /
 Here are some of the main choices we have made on gfs description and gfs codes:
 
 + Every revenue stream to state-owned companies was included in the category gfs code 1415E32 / gfs description: "Delivered/paid to state-owned enterprise(s)", regardless of the type of revenue. This includes bonus (pas-de-porte), royalties, dividend payments, equity sales (cessions de parts sociales), rent payments (loyers d'amodiation et/ou rente mensuelle), sale of tailings by GCM (Fonds versés a la GCM pour la vente des scories), additional royalty (redevance supplémentaires sur les réserves additionnelles), advances on future dividend and royalty payments (avance contractuelle sur dividendes ou royalties futurs), consulting fees (frais de consultance), sale of mining licenses (vente de Licence), fee for abandonning prehemption rights (frais de renonciation au droit de préemption).
+Note: According to article 25 of the law on privatization (http://www.droit-afrique.com/upload/doc/rdc/RDC-Loi-2008-08-desengagement-Etat-dans-entreprises-publiques.pdf), state equity sales should be collected by the Treasury, but in practice SOEs have been collecting them, as evidenced in EITI company reporting, so we categorize them here as payments to SOEs. 
 + Other re-categorizations can be found in the "reconcile" excel sheet.
 
 
@@ -88,11 +89,11 @@ get_plot_data <- function(df, g_var, threshold) {
   df %>% 
     filter(sector == "Mining") %>% 
     group_by({{g_var}}) %>% 
-    summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+    mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
     ungroup() %>% 
     mutate(x_var = if_else(total_pay > threshold, {{g_var}}, "Other")) %>%
     group_by(x_var) %>% 
-    summarise(total_pay = sum(total_pay, na.rm = T)) %>% 
+    summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
     ungroup()
 }
 
@@ -100,29 +101,18 @@ get_plot_data_2 <- function(df, g_var, h_var, threshold) {
   df %>% 
     filter(sector == "Mining") %>% 
     group_by({{g_var}}) %>% 
-    summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+    mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
     ungroup() %>% 
     mutate(x_var = if_else(total_pay > threshold, {{g_var}}, "Other")) %>%
-    group_by(x_var , h_var) %>% 
-    summarise(total_pay = sum(total_pay, na.rm = T)) %>% 
+    group_by(x_var , {{h_var}}) %>% 
+    summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
     ungroup()
 }
 
+get_plot_data_2(drc_eiti, h_var = year, g_var = company_name, 1e8)
 ```
 
-#### Customized pie chart
-Create a blank theme :
-```{r}
-blank_theme <- theme_minimal()+
-  theme(
-  axis.title.x = element_blank(),
-  axis.title.y = element_blank(),
-  panel.border = element_blank(),
-  panel.grid=element_blank(),
-  axis.ticks = element_blank(),
-  plot.title=element_text(size=14, face="bold")
-  )
-```
+
 
 ### Visual description of the data
 The data is ready for some simple descriptive analysis. 
@@ -166,24 +156,16 @@ The third chart shows us the mining companies that pay more than a threshold of 
 
 Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years, 2012 and 2014 respectively.
 ```{r, fig.width=12}
-drc_eiti %>% 
-  filter(sector == "Mining") %>% 
-  group_by(company_name) %>% 
-  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(company_name = if_else(total_pay > 18e7, company_name, "Other")) %>% 
-  group_by(company_name, year) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = total_pay, fill = fct_reorder(company_name, total_pay))) +
-  geom_bar(stat = "identity" , colour="black") +
-  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Total annual payments" , fill = "Companies") +
-  theme(
-  )
+get_plot_data_2(drc_eiti, g_var = company_name, h_var = year , threshold = 18e7) %>%
+  ggplot(data = ., mapping = aes(x = as.factor(year), y = total_pay)) + 
+    geom_col() +
+    facet_wrap(~fct_reorder(x_var, total_pay), nrow = 1) +
+    scale_x_discrete( ) +
+    scale_y_continuous(labels = unit_format(accuracy = 1 , unit = "milion USD", scale = 1e-6 , sep = " ")) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title ="Top mining taxpayers's annual contributions according to EITI summary data", x = "year", y = "Total annual payments" , facet_wrap = "Companies")
 ```
+
 
 The fourth chart shows us the major payment types, by gfs description, that contributed more than 120 million USD over the entire period covered by the database.
 
@@ -213,16 +195,8 @@ Comments:
 3. Taxes on income are important in later years 2014-16, though only really high in 2015, even though 2015 saw a drop in copper prices.
 4. Fines are a non-insignificant source of revenue. Questions tax policy and administration efficiency / governance.
 ```{r, fig.width=12}
-drc_eiti %>% 
-  filter(sector == "Mining") %>% 
-  group_by(gfs_description) %>% 
-  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(gfs_description = if_else(total_pay > 12e7, gfs_description, "Other")) %>% 
-  group_by(gfs_description, year) %>% 
-  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = total_pay, fill = fct_reorder(gfs_description, total_pay))) +
+get_plot_data_2(drc_eiti, g_var = gfs_description, h_var = year , threshold = 12e7) %>%
+  ggplot(data = ., mapping = aes(x = year, y = total_pay, fill = fct_reorder(x_var, total_pay))) +
   geom_bar(stat = "identity" , colour="black") +
   scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
   nrgi_theme() +
