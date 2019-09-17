@@ -119,6 +119,9 @@ The data is ready for some simple descriptive analysis.
 The first chart shows us the total amount of payment by year. 
 
 Comment: large drop in mining revenue in 2016. Does it conform to EITI reports and other data points?
+
+Comment: add number of companies reporting per year, range of payments, etc.
+
 ```{r, fig.width=12}
 drc_eiti %>% 
   filter(sector == "Mining") %>% 
@@ -668,6 +671,27 @@ drc_eiti %>%
   labs(title =str_wrap("2016 payments of Ivanhoe Mines Limited by project according to EITI summary data", width = 70), x = "Projects", y = "2016 payments", fill = "Name of revenue stream")
 ```
 
+```{r, fig.width=12}
+drc_eiti %>% 
+  filter(Additional_company_name == "Ivanhoe Mines Limited") %>% 
+  group_by(name_of_revenue_stream) %>% 
+  mutate(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(name_of_revenue_stream = if_else(total_pay > 1e6, name_of_revenue_stream, "Other")) %>% 
+  group_by(company_name, year, name_of_revenue_stream) %>% 
+  summarise(total_pay = sum(value_reported_as_USD, na.rm = T)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = year , y = total_pay , fill = fct_reorder(name_of_revenue_stream, -total_pay))) +
+  geom_bar(stat = "identity" , colour="black") +
+  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
+  facet_wrap(~company_name) +
+  nrgi_theme() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = unit_format(unit = "million USD", scale = 1e-6, sep = " ")) +
+  labs(title = str_wrap("Annual payments of Ivanhoe Mines Limited by project and revenue stream according to EITI summary data", 60), y = "Annual payments", fill = "Projects")
+```
+
+
 #### 5/ TFM
 ```{r, fig.width=12}
 drc_eiti %>% 
@@ -881,5 +905,18 @@ drc_eiti_entity %>%
   labs(title ="Annual revenue to SOEs from equity sales according to EITI summary data", y = "Annual payments", fill ="")
 
 ```
+  
+ ###  Export excel file of clean data for non-R users:
+  
+```{r message=FALSE}
+  
+ openxlsx::write.xlsx(drc_eiti, "drc__eiti_companies.xlxs")
+ openxlsx::write.xlsx(drc_eiti_entity, "drc__eiti_entity.xlxs")
+ 
+```
+ 
+ 
+ 
+ 
   
   
