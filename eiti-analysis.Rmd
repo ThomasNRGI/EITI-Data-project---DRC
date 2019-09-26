@@ -154,6 +154,8 @@ get_plot_data( drc_eiti, company_name , threshold = 18e7) %>%
 
 ```
 
+
+
 The third chart shows us the mining companies that pay more than a threshold of 180 million USD over the entire period covered by the database.
 
 Comment: Sicomines and SEK only make it in the top 12 because of large payments in specific years, 2012 and 2014 respectively.
@@ -161,7 +163,7 @@ Comment: Sicomines and SEK only make it in the top 12 because of large payments 
 get_plot_data_2(drc_eiti, g_var = company_name, h_var = year , threshold = 18e7) %>%
   ggplot(data = ., mapping = aes(x = as.factor(year), y = total_pay)) + 
     geom_col() +
-    facet_wrap(~fct_reorder(x_var, total_pay), nrow = 1) +
+    facet_wrap(~fct_reorder(str_wrap(x_var, width = 10), total_pay), nrow = 1) +
     scale_x_discrete( ) +
     scale_y_continuous(labels = unit_format(accuracy = 1 , unit = "milion USD", scale = 1e-6 , sep = " ")) +
     theme(axis.text.x = element_text(angle = 90)) +
@@ -198,13 +200,14 @@ Comments:
 4. Fines are a non-insignificant source of revenue. Questions tax policy and administration efficiency / governance.
 ```{r, fig.width=12}
 get_plot_data_2(drc_eiti, g_var = gfs_description, h_var = year , threshold = 12e7) %>%
-  ggplot(data = ., mapping = aes(x = year, y = total_pay, fill = fct_reorder(x_var, total_pay))) +
-  geom_bar(stat = "identity" , colour="black") +
-  scale_fill_manual(values = c(nrgi_colors(),"black", "red", "blue", "purple" , "navy" , "orange"), na.value = nrgi_colors()[5]) +
-  nrgi_theme() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = unit_format(accuracy = 0.1 , unit = "bn. USD", scale = 1e-9, sep = " ")) +
-  labs(title = str_wrap("Mining taxpayers' main annual contributions according to EITI summary data"), x = "year", y = str_wrap("Total annual payments"))
+  ggplot(data = ., mapping = aes(x = as.factor(year), y = total_pay)) + 
+    geom_col() +
+    facet_wrap(~fct_reorder(str_wrap(x_var, width = 10), total_pay), nrow = 1) +
+    scale_x_discrete( ) +
+    scale_y_continuous(labels = unit_format(accuracy = 1 , unit = "milion USD", scale = 1e-6 , sep = " ")) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title ="Main revenue streams according to EITI summary data", x = "year", y = "Total annual payments" , facet_wrap = "Revenue categories")
+
 ```
 
 ### Advanced visual description of the data
@@ -906,7 +909,68 @@ drc_eiti_entity %>%
 
 ```
   
- ###  Export excel file of clean data for non-R users:
+###  Import production, price and cost data from SNL
+ We import the files from SNL data on company production and cost per unit of production, as well as nominal prices of copper and gold
+ 
+```{r message=FALSE}
+ 
+## We import the files from SNL
+
+drc_gold <- readxl::read_excel("drc_gold.xlsx")
+   
+drc_copper<- readxl::read_excel("drc_copper.xlsx")
+
+
+nominalgoldprice <- readxl::read_xlsx("Prices_WorldGoldCouncil.xlsx", sheet = "Annual_Average", skip = 7)  %>%
+  select("Name", "US dollar...2") %>%
+  rename( "year" = "Name",  "goldprice" = "US dollar...2")
+
+nominalcopperprice <- readxl::read_xlsx("LMEcopperprice.xlsx", sheet = "Sheet1", skip = 7)  %>%
+  rename("year" = "...1", "copperprice" = "($/mt)") %>%
+    select( year, copperprice)
+
+
+## We merge the two files into one then harmonize company names: 
+drc_prod <-  full_join( drc_gold, drc_copper )  %>%
+    mutate("production" = as.numeric(`production`), company_name = propertyname) %>%
+    left_join(., company_reconcile, by = "company_name") %>% 
+     mutate(company_name = company_name_clean) %>%
+    select ( - c(propertyname, id, country,company_name_clean, Additional_company_name, sector ) ) %>%
+    left_join (., nominalgoldprice, by="year") %>%
+    left_join(., nominalcopperprice, by="year")
+
+## Basic description
+
+drc_prod %>%
+    filter(commodity == "Copper") %>%
+    group_by(year) %>%
+    summarise ( yearly_prod = sum(production, na.rm = T))  %>%
+    ungroup() %>%
+    ggplot (aes( year, yearly_prod)) +
+    geom_bar(stat="identity")
+
+drc_prod %>%
+    filter(commodity == "Gold") %>%
+    group_by(year) %>%
+    summarise ( yearly_prod = sum(production, na.rm = T))  %>%
+    ungroup() %>%
+    ggplot (aes( year, yearly_prod)) +
+    geom_bar(stat="identity")
+
+```
+
+```{r message=FALSE}
+ 
+## We then merge the production / price file with the main dataset
+
+drc_eiti <-  left_join( drc_eiti, drc_prod, by = c( "year", "company_name") ) 
+   
+
+
+```
+  
+  
+###  Export excel file of clean data for non-R users:
   
 ```{r message=FALSE}
   
