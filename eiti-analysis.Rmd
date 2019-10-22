@@ -109,6 +109,15 @@ get_plot_data_2 <- function(df, g_var, h_var, threshold) {
     ungroup()
 }
 
+get_plot_data_3 <- function(df, g_var, h_var, i_var) {
+  df %>% 
+    filter(commodity == {{g_var}}) %>% 
+    group_by({{h_var}} , {{i_var}}) %>% 
+    mutate ( yearly_prod = sum(production, na.rm = T))  %>%
+    ungroup() 
+   }
+
+
 ```
 
 
@@ -930,8 +939,8 @@ nominalcopperprice <- readxl::read_xlsx("LMEcopperprice.xlsx", sheet = "Sheet1",
     select( year, copperprice)
 
 
-## We merge the two files into one then harmonize company names: 
-drc_prod <-  full_join( drc_gold, drc_copper )  %>%
+## We merge the two files into one full dataset then harmonize company names. The problem is that some mines have two types of copper production: "regular" and SX-EW, which are reported separately, and with different cost/unit of production in SNL:
+drc_full <-  full_join( drc_gold, drc_copper )  %>%
     mutate("production" = as.numeric(`production`), company_name = propertyname) %>%
     left_join(., company_reconcile, by = "company_name") %>% 
      mutate(company_name = company_name_clean) %>%
@@ -939,15 +948,28 @@ drc_prod <-  full_join( drc_gold, drc_copper )  %>%
     left_join (., nominalgoldprice, by="year") %>%
     left_join(., nominalcopperprice, by="year")
 
-## Basic description
+## We zoom in on production - adding regular production of copper and SX-EW production, and ignoring costs
+drc_prod <- drc_full %>%
+    group_by(year, company_name) %>%
+    mutate(production = sum(production)) %>%
+    ungroup() %>%
+    distinct(., year, commodity, company_name, production, goldprice, copperprice ) 
+```
 
+
+
+
+## Basic description of production data
+```{r message=FALSE}
 drc_prod %>%
     filter(commodity == "Copper") %>%
     group_by(year) %>%
     summarise ( yearly_prod = sum(production, na.rm = T))  %>%
     ungroup() %>%
     ggplot (aes( year, yearly_prod)) +
-    geom_bar(stat="identity")
+    geom_bar(stat="identity") +
+    scale_y_continuous(labels = unit_format(accuracy = 1 , unit = "000")) +
+    labs(title ="Annual copper production from DRC projects reported in SNL", y = "Annual production - tonnes", fill ="")
 
 drc_prod %>%
     filter(commodity == "Gold") %>%
@@ -955,7 +977,47 @@ drc_prod %>%
     summarise ( yearly_prod = sum(production, na.rm = T))  %>%
     ungroup() %>%
     ggplot (aes( year, yearly_prod)) +
-    geom_bar(stat="identity")
+    geom_bar(stat="identity")+
+    scale_y_continuous(labels = unit_format(accuracy = 1 ,unit = "000 oz", scale = 1e-3, sep = " ")) +
+    labs(title ="Annual gold production from DRC projects reported in SNL", y = "Annual production", fill ="")
+
+get_plot_data_3(drc_prod, "Copper", company_name , year) %>%
+    ggplot (aes( year, yearly_prod)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~fct_reorder(str_wrap(company_name, width = 5), yearly_prod), nrow = 1) +
+    scale_y_continuous(labels = unit_format(accuracy = 1 , unit = "000")) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title ="Annual copper production from DRC projects reported in SNL", x= "Year", y = "Annual production - tonnes", facet_wrap="companies")
+
+get_plot_data_3(drc_prod, "Gold", company_name , year) %>%
+    ggplot (aes( year, yearly_prod)) +
+    geom_bar(stat="identity") +
+    facet_wrap(~fct_reorder(str_wrap(company_name, width = 5), yearly_prod), nrow = 1) +
+   scale_y_continuous(labels = unit_format(accuracy = 1 ,unit = "000 oz", scale = 1e-3, sep = " ")) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title ="Annual gold production from DRC projects reported in SNL", x= "Year", y = "Annual production ", facet_wrap="companies")
+
+drc_prod %>%
+    filter(commodity == "Copper") %>%
+    group_by(company_name) %>%
+    summarise ( yearly_prod = sum(production, na.rm = T))  %>%
+    ungroup() %>%
+    ggplot (aes( fct_reorder(company_name, -yearly_prod) , yearly_prod)) +
+    geom_bar(stat="identity")+
+    coord_flip() +
+    scale_y_continuous(labels = unit_format(accuracy = 0.1 , scale = 1e-3, sep = " ")) +
+    labs(title =str_wrap("Cumulative copper production from DRC projects reported in SNL", width = 50), x= "Companies", y = "Annual production - million tonnes")
+
+drc_prod %>%
+    filter(commodity == "Gold") %>%
+    group_by(company_name) %>%
+    summarise ( yearly_prod = sum(production, na.rm = T))  %>%
+    ungroup() %>%
+    ggplot (aes( fct_reorder(company_name, -yearly_prod) , yearly_prod)) +
+    geom_bar(stat="identity")+
+    coord_flip() +
+    scale_y_continuous(labels = unit_format(accuracy = 0.1 ,unit = "million oz", scale = 1e-6, sep = " ")) +
+    labs(title = "Cumulative gold production from DRC projects reported in SNL", x= "Companies", y = "Annual production ")
 
 ```
 
